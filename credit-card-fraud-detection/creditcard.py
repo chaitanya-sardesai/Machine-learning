@@ -107,78 +107,43 @@ def calc_entropy(node):
     return entropy
 
 
-def calc_information_gain(threshold, left_subtree, right_subtree, total_example_count, information_gain):
-    # left_subtree = []
-    # right_subtree = []
-    # root = list(credit_card_data['Class'])
-    # # divide data into left and right child based on current threshold
-    # for index, val in zip(feature_data.index, feature_data.values):
-    #     if val < threshold:
-    #         left_subtree.append(credit_card_data.at[index, 'Class'])
-    #     elif val >= threshold:
-    #         right_subtree.append(credit_card_data.at[index, 'Class'])
-    # information_gain = calc_entropy(root)
-    # print(informationGain)
-
-    for val in right_subtree:
-        if val < threshold:
-            left_subtree.append(val)
-        else:
-            break
-    entropy = calc_entropy(left_subtree)
-    information_gain -= ((len(left_subtree) / total_example_count) * entropy)
-    # print(informationGain)
-
-    entropy = calc_entropy(right_subtree)
-    information_gain -= ((len(right_subtree) / total_example_count) * entropy)
-    # print(informationGain)
-    # print(leftSubtree)
-    # print(rightSubtree)
-    return information_gain
-
-
-def initial_division_subtree(credit_card_data, feature_data, threshold):
+def calc_information_gain(credit_card_data, feature_data, threshold):
     left_subtree = []
     right_subtree = []
-    # root = list(credit_card_data['Class'])
+    root = list(credit_card_data['Class'])
     # divide data into left and right child based on current threshold
     for index, val in zip(feature_data.index, feature_data.values):
         if val < threshold:
             left_subtree.append(credit_card_data.at[index, 'Class'])
         elif val >= threshold:
             right_subtree.append(credit_card_data.at[index, 'Class'])
-    # information_gain = calc_entropy(root)
+    information_gain = calc_entropy(root)
     # print(informationGain)
-    return left_subtree, right_subtree
 
+    entropy = calc_entropy(left_subtree)
+    information_gain -= ((len(left_subtree) / len(feature_data)) * entropy)
+    # print(informationGain)
 
-def sort_feature(feature_data, feature):
-    # for val in feature_data:
-    #     if val>max_val:
-    #         max_val = val
-    #     elif val < min_val:
-    #         min_val = val
-    feature_data = feature_data.sort_values()
-    min_val, max_val = feature_data.iloc[0], feature_data.iloc[-1]
-    return max_val, min_val, feature_data
+    entropy = calc_entropy(right_subtree)
+    information_gain -= ((len(right_subtree) / len(feature_data)) * entropy)
+    # print(informationGain)
+    # print(leftSubtree)
+    # print(rightSubtree)
+    return information_gain
 
 
 def get_best_attribute(credit_card_data, features_lst):
     max_gain = -1
     best_attribute = -1
     best_threshold = -1
-    information_gain_root = list(credit_card_data['Class'])
     for feature in features_lst:
         feature_data = credit_card_data[feature]
-        # max_val = feature_data.max()
-        # min_val = feature_data.min()
-        max_val, min_val, feature_data = sort_feature(feature_data, feature)
-        left_subtree, right_subtree = initial_division_subtree(credit_card_data, feature_data, min_val)
-        # Check for different thresholds, which are each data points
-        for val in feature_data[1:]:
-            # threshold = min_val + k * (max_val - min_val) / 51
-            threshold = val
-            gain = calc_information_gain(threshold, left_subtree, right_subtree, len(feature_data), information_gain_root)
+        max_val = feature_data.max()
+        min_val = feature_data.min()
+        # Check for 50 different thresholds
+        for k in range(1, 51, 1):
+            threshold = min_val + k * (max_val - min_val) / 51
+            gain = calc_information_gain(credit_card_data, feature_data, threshold)
             if gain > max_gain:
                 max_gain = gain
                 best_attribute = feature
